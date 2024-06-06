@@ -1,0 +1,104 @@
+---
+title: "Image Data Summary"
+output: html_document
+date: "2024-06-06"
+---
+
+
+```{r setup packages}
+
+library(tidyverse)
+library(janitor)
+library(renv)
+
+```
+
+## Reading in ANIML data
+```{r check out data}
+
+animl_wide <- read_csv("test_animldata_5jun2024.csv")
+str(animl)
+
+animl <- animl_wide %>% 
+  clean_names() %>% 
+  pivot_longer(cols = 13:60, # columns containing species names
+               names_to = "species",
+               values_to = "count"
+               ) %>% 
+  filter(count != 0) %>% # remove the species that have a 0 count because they weren't detected (keeps "empty" = 1)
+  select(!c(id, camera_id, project_id, deployment_id, deployment_timezone)) %>%  # only keep useful columns
+  
+  mutate(deployment_name = str_remove(deployment_name, "-default")) %>% 
+  mutate(date_time_original = ymd_hms(date_time_original)) %>% # giving a warning that 4 failed to parse ... checked and they're empties in teh middle of the april at auggie's so deleting below
+  filter(!is.na(date_time_original)) %>% 
+  separate(date_time_original, into = c('date', 'time'), sep=' ', remove = TRUE) %>% # make columns for date and time separated
+  mutate(year = year(date)) %>% # makes this recognized as year format
+  mutate(month = month(date, label = TRUE)) #same
+
+#105,000 + entries, whew
+```
+
+## Summarize the data for some quick visualizations
+```{r making summary tables}
+
+########################################################################################
+
+######### make table of total images by deployment_name ###########
+count_site <- animl %>%
+  count(deployment_name)
+
+count_site
+########################################################################################
+
+######### make table of animal activity (seconds = incidences) by species summed across all deployment_ids ###########
+count_species <- animl %>%
+  count(species) # makes a summary table of # images per species per deployment_id per month
+
+count_species
+########################################################################################
+
+
+```
+
+## Temporal visualizations are more tricky because some of the cameras have date errors
+### for now we will just filter incorrect dates out
+```{r visualizations of data over time}
+
+animl_time <- animl %>% 
+  filter(year > 2018)
+
+######### make table of trap nights by deployment_name ###########
+
+# trap night is defined as every night a camera is active, so this isn't really trap nights, its "this camera was triggered nights"
+
+trigger_nights_site <-  animl_time%>% 
+  group_by(deployment_name) %>% 
+  summarize(trigger_nights = n_distinct(deployment_name, date)) # how many unique dates at each site
+
+trapnights_site <- animl_time %>% 
+  group_by(deployment_name) %>% 
+  summarize(start = min(date),
+            end = max(date),
+            trapnights = difftime(max(date), min(date), units = "days"))
+view(trapnights_site)
+
+######### make table of species by deployment_name ###########
+species_site <- animl_time %>%
+  count(deployment_name, species) # makes a summary table of # images per species per deployment_name per site
+# includes count of empties
+
+species_site
+
+######### make table of animal activity (seconds = incidences) by deployment_id by date ###########
+count_site_date <- animl %>%
+  count(deployment_name, month) # makes a summary table of # animal-seconds per species per deployment_id per month
+########################################################################################
+
+
+######### make table of animal activity (seconds = incidences) summed across all deployment_ids by date ###########
+count_month <- animl %>%
+  count(month) # makes a summary table of # animal-seconds per month
+########################################################################################
+
+```
+
