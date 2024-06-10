@@ -5,19 +5,39 @@ date: "2024-06-06"
 ---
 
 
-```{r setup packages}
+```{r setup packages, include=FALSE}
 
 library(tidyverse)
 library(janitor)
 library(renv)
+library(knitr)
+
+mytheme <- theme_classic()+ 
+  ylab("Number of Sightings")+
+  xlab("Sites North to South")+
+  theme(axis.text.x = element_text(angle = 45, 
+                                   hjust = 1, 
+                                   size = 7),
+        axis.text.y = element_text(size = 10),
+        axis.title.y = element_text(size = 10),
+        axis.title.x = element_text(size = 10))
 
 ```
+# June 2024 Summary of Hollister Ranch Coastal Wildlife Camera Trapping Study
 
-## Reading in ANIML data
-```{r check out data}
+### David is presenting 6/21 and wants the following summary figures:
+1) He would like a GIS map of all the cameras- with vegetation layers.  Can he send you all ESRI layers and can you make this?   
+2) Maybe a pie chart for all images total?  Then ideally the map layer above with a separate pie chart for each camera separately on that so you can see how much variation across the coast
+3) Maybe animal activity over month - like a stacked bar graph per month that has image individuals of wild animals per camera night operating per month.  Its ok if this isnt ready for June 21 if it would be possible.  
+4) Potentially relationship between people and diversity or abundance
+5) Other variables? 
+  - distance from fresh water
+  - distance from impervious surface or parking lot
 
-animl_wide <- read_csv("test_animldata_5jun2024.csv")
-str(animl)
+```{r check out data, echo=FALSE, message=FALSE, warning=FALSE}
+
+animl_wide <- read_csv("animldata_10jun2024.csv")
+#str(animl)
 
 animl <- animl_wide %>% 
   clean_names() %>% 
@@ -29,40 +49,97 @@ animl <- animl_wide %>%
   select(!c(id, camera_id, project_id, deployment_id, deployment_timezone)) %>%  # only keep useful columns
   
   mutate(deployment_name = str_remove(deployment_name, "-default")) %>% 
+  mutate(deployment_name =  
+         case_when(
+           str_detect(deployment_name, "Alegria") ~ "Alegria",
+           str_detect(deployment_name, "Caliente") ~ "Caliente",
+           str_detect(deployment_name, "Gato") ~ "Gato",
+           str_detect(deployment_name, "Llegua") ~ "Llegua",
+           .default = as.character(deployment_name)
+           )) %>% 
   mutate(date_time_original = ymd_hms(date_time_original)) %>% # giving a warning that 4 failed to parse ... checked and they're empties in teh middle of the april at auggie's so deleting below
   filter(!is.na(date_time_original)) %>% 
   separate(date_time_original, into = c('date', 'time'), sep=' ', remove = TRUE) %>% # make columns for date and time separated
   mutate(year = year(date)) %>% # makes this recognized as year format
-  mutate(month = month(date, label = TRUE)) #same
+  mutate(month = month(date, label = TRUE))  #same
+  
 
 #105,000 + entries, whew
 ```
 
-## Summarize the data for some quick visualizations
-```{r making summary tables}
+## Summarizing the data for some quick visualizations
+```{r making summary tables, echo=FALSE, message=FALSE, warning=FALSE}
 
 ########################################################################################
 
 ######### make table of total images by deployment_name ###########
 count_site <- animl %>%
-  count(deployment_name)
+  count(deployment_name) %>% 
+  rename(n_images_total = n) # rename n to be more informative
 
-count_site
+
 ########################################################################################
 
-######### make table of animal activity (seconds = incidences) by species summed across all deployment_ids ###########
+######### make table of animal activity ( = incidences) by species summed across all deployment_ids ###########
 count_species <- animl %>%
-  count(species) # makes a summary table of # images per species per deployment_id per month
+  count(species) %>%  # makes a summary table of # images per species per deployment_id
+  rename(n_images = n) # rename n to be more informative
 
-count_species
+
+########################################################################################
+
+######### make table of TOTAL wild animal activity ( = incidences that weren't empty, people, or domestic animals) summed across deployment_ids ###########
+count_activity <- animl %>%
+  filter(species != "empty") %>% 
+  filter(species != "person")%>% 
+  filter(species != "human")%>% 
+  filter(species != "dog")%>% 
+  filter(species != "domestic dog")%>% 
+  filter(species != "equestrian") %>% 
+  count(deployment_name) %>%  # makes a summary table of # images per species per deployment_id
+  rename(n_animal_imgs = n) # rename n to be more informative
+
+
+########################################################################################
+
+######### make table of total human activity ( = incidences that weren't empty, people, or domestic animals) summed across deployment_ids ###########
+human_activity <- animl %>%
+  filter(species == "person"|species == "human"|species == "dog"|species == "domestic dog"|species == "equestrian") %>% 
+  count(deployment_name) %>%  # makes a summary table of # images of humans per deployment_id
+  rename(n_human_imgs = n) # rename n to be more informative
+
+########################################################################################
+
+######### make table number of wildlife species at each site ###########
+num_species_site <- animl %>%
+  filter(species != "empty") %>% 
+  filter(species != "person")%>% 
+  filter(species != "human")%>% 
+  filter(species != "dog")%>% 
+  filter(species != "domestic dog")%>% 
+  filter(species != "equestrian") %>%  
+  group_by(deployment_name) %>%  # makes a summary table of # species per deployment_id
+  summarize(num_species = n_distinct(deployment_name, species)) # how many unique species at each site
+  
 ########################################################################################
 
 
+######### make table one big summary table by site ###########
+
+camera_activity_summary <- full_join(count_site, count_activity,  by = join_by(deployment_name)) %>% 
+  full_join(human_activity, by = join_by(deployment_name)) %>%
+  full_join(num_species_site, by = join_by(deployment_name)) %>% 
+  mutate(percent_animals = (n_animal_imgs/n_images_total)*100) 
+
+kable(camera_activity_summary
+      ,col.names = c("Camera Location", "Total Images Taken" , "Number of Animal Sightings", "Number of Human Sightings", "Number of Unique Species", "Percent of Images Containing Animals")
+      )
+  
 ```
 
 ## Temporal visualizations are more tricky because some of the cameras have date errors
 ### for now we will just filter incorrect dates out
-```{r visualizations of data over time}
+```{r visualizations of data over time, echo=FALSE, message=FALSE, warning=FALSE}
 
 animl_time <- animl %>% 
   filter(year > 2018)
@@ -80,14 +157,19 @@ trapnights_site <- animl_time %>%
   summarize(start = min(date),
             end = max(date),
             trapnights = difftime(max(date), min(date), units = "days"))
-view(trapnights_site)
+#view(trapnights_site)
+########################################################################################
+
 
 ######### make table of species by deployment_name ###########
 species_site <- animl_time %>%
-  count(deployment_name, species) # makes a summary table of # images per species per deployment_name per site
+  count(deployment_name, species) %>%  # makes a summary table of # images per species per deployment_name per site
 # includes count of empties
+  rename(n_imgs = n) # rename n to be more informative
 
-species_site
+#species_site
+########################################################################################
+
 
 ######### make table of animal activity (seconds = incidences) by deployment_id by date ###########
 count_site_date <- animl %>%
@@ -95,10 +177,171 @@ count_site_date <- animl %>%
 ########################################################################################
 
 
-######### make table of animal activity (seconds = incidences) summed across all deployment_ids by date ###########
+######### make table of total images summed across all deployment_ids by date ###########
 count_month <- animl %>%
   count(month) # makes a summary table of # animal-seconds per month
 ########################################################################################
+
+
+######### make table of animal activity ( = incidences) summed across all deployment_ids by date ###########
+count_month <- animl %>%
+  count(month) # makes a summary table of # animal-seconds per month
+########################################################################################
+
+```
+
+
+## Some plots to summarize preliminary data
+
+### Total nights that cameras were active at each site
+```{r trap nights by site, echo=FALSE, message=FALSE, warning=FALSE}
+
+trapnights_site$deployment_name <- fct_relevel(count_site$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
+
+nightsbysite <- ggplot(trapnights_site, aes(deployment_name, trapnights)) +
+  geom_bar(stat = "identity") + # so i can pass a value to the bar instead of having ggplot count for me
+  mytheme +
+  ylab("Number of Nights Camera was Active")+
+  xlab("Camera Location - North to South")
+
+nightsbysite
+
+```
+
+### Total images taken at each site (including animal images, human images, and blanks)
+
+```{r count by site, echo=FALSE, message=FALSE, warning=FALSE}
+count_site$deployment_name <- fct_relevel(count_site$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
+
+countbysite <- ggplot(count_site, aes(deployment_name, n_images_total)) +
+  geom_bar(stat = "identity") + # so i can pass a value to the bar instead of having ggplot count for me
+  mytheme +
+  ylab("Number of Total Images Taken")+
+  xlab("Camera Location - North to South")
+
+countbysite
+```
+
+### Percent of images from each site that contained animals (this corrects for different numbers of images taken at different sites, better for comparing sites to each other)
+```{r percent animals by site, echo=FALSE, message=FALSE, warning=FALSE}
+
+camera_activity_summary$deployment_name <- fct_relevel(count_site$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
+
+percentbysite <- ggplot(camera_activity_summary, aes(deployment_name, percent_animals)) +
+  geom_bar(stat = "identity") + # so i can pass a value to the bar instead of having ggplot count for me
+  mytheme +
+  ylab("Percent of Images Taken Containing Wildlife")+
+  xlab("Camera Location - North to South")
+
+percentbysite
+```
+
+### What wildlife species were seen across the whole ranch and how many times?
+```{r frequency of species, echo=FALSE, message=FALSE, warning=FALSE}
+
+count_species_plot <- count_species %>% # make a new version of this table with wildlife sp only
+  filter(species != "empty") %>% 
+  filter(species != "animal") %>% 
+  filter(species != "person") %>% 
+  filter(species != "domestic_dog") %>% 
+  filter(species != "equestrian") %>% 
+  filter(species != "human") %>% 
+  filter(species != "dog") %>% 
+  filter(!str_detect(species, "unidentified"))%>% 
+  filter(!str_detect(species, "dead"))
+
+countbyspecies <- ggplot(count_species_plot, aes(x = reorder(species, -n_images)
+                                                 , y = n_images)) + # this reorders them from biggest to smallest i think
+  geom_bar(stat = "identity") + # so i can pass a value to the bar instead of having ggplot count for me
+  mytheme +
+  ylab("Number of Sightings")+
+  xlab("Species")
+
+countbyspecies
+```
+
+### How many times was each species were seen at each location?
+```{r stacked bar chart of species by site, echo=FALSE, message=FALSE, warning=FALSE}
+
+species_site_plot <- species_site %>% # make a new version of this table with wildlife sp only
+  filter(species != "empty") %>% 
+  filter(species != "animal") %>% 
+  filter(species != "person") %>% 
+  filter(species != "domestic_dog") %>% 
+  filter(species != "equestrian") %>% 
+  filter(species != "human") %>% 
+  filter(species != "dog") %>% 
+  filter(!str_detect(species, "unidentified")) %>% 
+  filter(!str_detect(species, "dead"))
+
+# set order of sites N to S
+species_site_plot$deployment_name <- deployment_name <- fct_relevel(species_site_plot$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
+
+stacked_spp_site <- ggplot(species_site_plot, aes(deployment_name, n_imgs)) +
+  geom_bar(aes(fill = species), # lets me make clustered bar chart
+           stat = "identity", # idk but necessary
+           #position = "dodge" # otherwise default is stacked barchart
+           )+
+  mytheme +  
+  ylab("Number of Sightings")+
+  xlab("Camera Locations - North to South")
+
+stacked_spp_site
+
+```
+ 
+### How many times were humans and domestic animals seen at each location?
+```{r humans and dogs, echo=FALSE, message=FALSE, warning=FALSE}
+
+human_site <- species_site %>% # make a new version of this table with human + domestic sp only
+  filter( species =="person"| species == "domestic_dog"| species ==  "equestrian"| species == "human"| species == "dog") %>% 
+  mutate(species = case_when(species == "human" ~ "person",
+                             .default = as.character(species)))
+
+# set order of sites N to S
+human_site$deployment_name <- deployment_name <- fct_relevel(human_site$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
+
+human_site_plot <- ggplot(human_site, aes(deployment_name, n_imgs)) +
+  geom_bar(aes(fill = species), # lets me make clustered bar chart
+           stat = "identity", # idk but necessary
+           #position = "dodge" # otherwise default is stacked barchart
+           )+
+  mytheme +
+  ylab("Number of Sightings")+
+  xlab("Camera Location - North to South")
+
+
+human_site_plot
+
+```
+
+
+### Is there a relationship between people sightings and wildlife sightings?
+
+```{r wildlife count ~ human count, echo=FALSE, message=FALSE, warning=FALSE}
+
+humanxwildlife_scatter <- ggplot(camera_activity_summary, aes(x = n_human_imgs, y = n_animal_imgs))+
+  geom_point() +
+  mytheme +
+  ylab("Number of Animal Sightings")+
+  xlab("Number of Human Sightings")
+
+humanxwildlife_scatter
+
+```
+
+
+### Is there a relationship between people sightings and wildlife species richness (# species)?
+
+```{r richness ~ human count, echo=FALSE, message=FALSE, warning=FALSE}
+
+humanxrichness_scatter <- ggplot(camera_activity_summary, aes(x = n_human_imgs, y = num_species))+
+  geom_point() +
+  mytheme +
+  ylab("Number of Wildlife Species")+
+  xlab("Number of Human Sightings")
+
+humanxrichness_scatter
 
 ```
 
