@@ -14,6 +14,8 @@ library(janitor)
 library(renv)
 library(knitr)
 library(pals) # bunch of distinct color palettes
+library(ggmap)
+library(ggrepel)
 
 # sequence of 25 colors that are mostly distinguishable, thanks
 c25 <- c(
@@ -54,7 +56,7 @@ mytheme <- theme_classic()+
 # June 2024 Summary of Hollister Ranch Coastal Wildlife Camera Trapping Study
 
 ### Based on our conversation from last week, I've prepared the following summary figures:
-1) GIS map with all Hollister cameras and JLDP cameras (in a separate document) 
+1) GIS map with all Hollister cameras and JLDP cameras (draft here, will make final in ArcGIS) 
 2) a pie chart for all images total?  Then ideally the map layer above with a separate pie chart for each camera separately on that so you can see how much variation across the coast
 3) animal activity over month - like a stacked bar graph per month that has image individuals of wild animals per camera night operating per month.   
 4) relationship between people and diversity or abundance of wildlife
@@ -96,6 +98,68 @@ animl <- animl_wide %>%
 
 #105,000 + entries, whew
 ```
+
+## Draft Map of all Hollister Ranch Cameras
+### (final draft will include Dangermond cameras)
+
+```{r map, echo=FALSE, message=FALSE, warning=FALSE}
+
+###################### pull in hr camera data ###########################
+cam_sites <- read_csv("hroa_cam_sites.csv") %>% 
+  mutate(WKT = str_remove(WKT, "POINT \\(")) %>% 
+  mutate(WKT = str_remove(WKT, "\\)")) %>% 
+  separate(WKT, c("lon", "lat"), sep = " ") %>% #separate weird coords into lon lat
+  mutate(lon = as.numeric(lon)) %>% 
+  mutate(lat = as.numeric(lat)) %>% 
+  select(lat, lon, name) %>% 
+  filter(name != "Surfin Cowboys") %>% 
+  filter(name != "Bulito Beach Access") %>% 
+  filter(name != "John's Pond Culvert") %>% 
+  filter(name != "Drake's Access Point") %>% 
+  mutate(name = case_when(
+    name == "Rennie's / North Bulito Pond" ~ "Rennie's",
+    name == "Sacate/Coyote" ~ "Sacate",
+    name == "Bulito South" ~ "Bulito",
+    .default = as.character(name)
+  ))
+
+############# Set map parameters and make the base map ################
+register_google(key = "AIzaSyDMo_xQFMKeU320T6-fnJgvQ4KwzoLubgA") # new key june 2024
+
+mapbase <- get_map(location = c(lon = -120.35, lat = 34.5), 
+                   zoom = 12,
+                   maptype = "satellite", 
+                   source = "google")
+
+#basemap <- ggmap(mapbase) 
+
+#basemap # to make sure it's in the right place
+#######################################################################
+
+#lon_crop = c(120.5, 120.2)
+#lat_crop = c(34.8, 34.2)
+
+cammap <- ggmap(mapbase) +
+  geom_point(data = cam_sites, 
+             aes(x = lon, y = lat),
+             colour = "lightblue")+
+  geom_label_repel(data = cam_sites,  # need to use ggrepel because the stupid labels overlap
+             aes(x = lon, y = lat, label = name), 
+             #nudge_x = 0.01,
+             #nudge_y = 0.01,
+             size = 2,
+             force = 2, # makes labels less likely to overlap
+             min.segment.length = unit(0, "lines") #adds a line to point
+             )+
+  # want a specific part of the map only 
+  scale_y_continuous(limits = c(34.420, 34.50))+
+
+  theme_bw()
+
+cammap
+
+```
+
 
 ## Summarizing the data for some quick visualizations
 ```{r making summary tables, echo=FALSE, message=FALSE, warning=FALSE}
