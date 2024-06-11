@@ -1,0 +1,226 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Image Data Summary},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Image Data Summary}
+\author{}
+\date{\vspace{-2.5em}2024-06-06}
+
+\begin{document}
+\maketitle
+
+\section{June 2024 Summary of Hollister Ranch Coastal Wildlife Camera
+Trapping
+Study}\label{june-2024-summary-of-hollister-ranch-coastal-wildlife-camera-trapping-study}
+
+\subsubsection{Based on our conversation from last week, I've prepared
+the following summary
+figures:}\label{based-on-our-conversation-from-last-week-ive-prepared-the-following-summary-figures}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi})}
+\tightlist
+\item
+  GIS map with all Hollister cameras and JLDP cameras (in a separate
+  document)
+\item
+  a pie chart for all images total? Then ideally the map layer above
+  with a separate pie chart for each camera separately on that so you
+  can see how much variation across the coast
+\item
+  animal activity over month - like a stacked bar graph per month that
+  has image individuals of wild animals per camera night operating per
+  month.\\
+\item
+  relationship between people and diversity or abundance of wildlife
+\item
+  Other variables of interest?
+\end{enumerate}
+
+\subsection{Summarizing the data for some quick
+visualizations}\label{summarizing-the-data-for-some-quick-visualizations}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1677}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1180}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1677}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1615}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.1553}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 10\tabcolsep) * \real{0.2298}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+Camera Location (N to S)
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Total Images Taken
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Number of Animal Sightings
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Number of Human Sightings
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Number of Unique Species
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+Percent of Images Containing Animals
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+Gato & 7803 & 1622 & 1300 & 21 & 20.786877 \\
+Kayak (St.~Augustine West) & 29149 & 808 & 453 & 12 & 2.771965 \\
+Llegua & 8943 & 866 & 891 & 14 & 9.683551 \\
+Auggie's & 39824 & 1040 & 117 & 17 & 2.611491 \\
+Rennie's & 114 & 7 & 4 & 3 & 6.140351 \\
+Bulito & 8283 & 238 & 246 & 10 & 2.873355 \\
+Panochas & 10679 & 657 & 174 & 13 & 6.152261 \\
+Little Drake's & 11793 & 664 & 537 & 12 & 5.630459 \\
+Sacate & 2506 & 966 & 472 & 13 & 38.547486 \\
+Alegria & 8022 & 1965 & 545 & 34 & 24.495138 \\
+Caliente & 3309 & 169 & 651 & 14 & 5.107283 \\
+Cuarta & 9 & 2 & NA & 1 & 22.222222 \\
+\end{longtable}
+
+\subsection{Some plots to summarize preliminary
+data}\label{some-plots-to-summarize-preliminary-data}
+
+\subsubsection{Total nights that cameras were active at each
+location}\label{total-nights-that-cameras-were-active-at-each-location}
+
+\includegraphics{imagedata_summary_files/figure-latex/trap nights by site-1.pdf}
+
+\subsubsection{Total images taken at each location (including animal
+images, human images, and
+blanks)}\label{total-images-taken-at-each-location-including-animal-images-human-images-and-blanks}
+
+\includegraphics{imagedata_summary_files/figure-latex/count by site-1.pdf}
+
+\subsubsection{Percent of images that contained animals at each location
+(this corrects for different numbers of images taken at different
+locations, better for comparing sites to each
+other)}\label{percent-of-images-that-contained-animals-at-each-location-this-corrects-for-different-numbers-of-images-taken-at-different-locations-better-for-comparing-sites-to-each-other}
+
+\includegraphics{imagedata_summary_files/figure-latex/percent animals by site-1.pdf}
+
+\subsubsection{What wildlife species were seen across the whole ranch
+and how many
+times?}\label{what-wildlife-species-were-seen-across-the-whole-ranch-and-how-many-times}
+
+\includegraphics{imagedata_summary_files/figure-latex/frequency of species-1.pdf}
+
+\subsubsection{How many times was each species seen at each
+location?}\label{how-many-times-was-each-species-seen-at-each-location}
+
+\includegraphics{imagedata_summary_files/figure-latex/stacked bar chart of species by site-1.pdf}
+
+\subsubsection{\texorpdfstring{How \emph{frequently} was each species
+seen at each location,
+relatively?}{How frequently was each species seen at each location, relatively?}}\label{how-frequently-was-each-species-seen-at-each-location-relatively}
+
+\paragraph{These pie charts use relative frequency (percent of total
+wildlife sightings) to correct for differences in detection between
+cameras}\label{these-pie-charts-use-relative-frequency-percent-of-total-wildlife-sightings-to-correct-for-differences-in-detection-between-cameras}
+
+\includegraphics{imagedata_summary_files/figure-latex/wildlife frequency pie charts-1.pdf}
+
+\subsubsection{How many times were humans and domestic animals seen at
+each
+location?}\label{how-many-times-were-humans-and-domestic-animals-seen-at-each-location}
+
+\includegraphics{imagedata_summary_files/figure-latex/humans and dogs-1.pdf}
+
+\subsubsection{Wildlife sightings per month, broken down by
+species}\label{wildlife-sightings-per-month-broken-down-by-species}
+
+\includegraphics{imagedata_summary_files/figure-latex/monthly wildlife-1.pdf}
+
+\subsubsection{Is there a relationship between people sightings and
+wildlife
+sightings?}\label{is-there-a-relationship-between-people-sightings-and-wildlife-sightings}
+
+\includegraphics{imagedata_summary_files/figure-latex/wildlife count ~ human count-1.pdf}
+
+\subsubsection{Is there a relationship between people sightings and
+wildlife species richness (\#
+species)?}\label{is-there-a-relationship-between-people-sightings-and-wildlife-species-richness-species}
+
+\includegraphics{imagedata_summary_files/figure-latex/richness ~ human count-1.pdf}
+
+\paragraph{Seems like a slight positive correlation between wildlife
+sightings and human sightings, which is likely a result of camera
+performance, e.g.~some cameras take more pictures and just capture more
+humans and more
+wildlife.}\label{seems-like-a-slight-positive-correlation-between-wildlife-sightings-and-human-sightings-which-is-likely-a-result-of-camera-performance-e.g.-some-cameras-take-more-pictures-and-just-capture-more-humans-and-more-wildlife.}
+
+\end{document}
