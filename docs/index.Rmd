@@ -55,10 +55,10 @@ mytheme <- theme_classic()+
 ```
 # June 2024 Summary of Hollister Ranch Coastal Wildlife Camera Trapping Study
 
-### Based on our conversation from last week, I've prepared the following summary figures:
+### Based on our conversation from last week, I've prepared the following summary figures plus some other options:
 1) GIS map with all Hollister cameras and JLDP cameras (draft here, will make final in ArcGIS) 
-2) a pie chart for all images total?  Then ideally the map layer above with a separate pie chart for each camera separately on that so you can see how much variation across the coast
-3) animal activity over month - like a stacked bar graph per month that has image individuals of wild animals per camera night operating per month.   
+2) pie chart for each camera separately on that so you can see variation across the coast
+3) animal activity over month - stacked bar graph per month that has wild animals per camera night operating per month.   
 4) relationship between people and diversity or abundance of wildlife
 5) Other variables of interest?
 
@@ -232,7 +232,7 @@ camera_activity_summary <- full_join(count_site, count_activity,  by = join_by(d
   full_join(human_activity, by = join_by(deployment_name)) %>%
   full_join(num_species_site, by = join_by(deployment_name)) %>% 
   mutate(percent_animals = (n_animal_imgs/n_images_total)*100) %>% 
-  mutate(deployment_name = fct_relevel(deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Alegria", "Caliente"))) %>%  # relevel sites so they're in a N > S order
+  mutate(deployment_name = fct_relevel(deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Cuarta", "Alegria", "Caliente"))) %>%  # relevel sites so they're in a N > S order
   arrange(deployment_name)
 
 kable(camera_activity_summary
@@ -303,7 +303,7 @@ count_month <- animl %>%
 ### Total nights that cameras were active at each location
 ```{r trap nights by site, echo=FALSE, message=FALSE, warning=FALSE}
 
-trapnights_site$deployment_name <- fct_relevel(count_site$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
+trapnights_site$deployment_name <- fct_relevel(count_site$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Cuarta", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
 
 nightsbysite <- ggplot(trapnights_site, aes(deployment_name, trapnights)) +
   geom_bar(stat = "identity") + # so i can pass a value to the bar instead of having ggplot count for me
@@ -318,7 +318,7 @@ nightsbysite
 ### Total images taken at each location (including animal images, human images, and blanks)
 
 ```{r count by site, echo=FALSE, message=FALSE, warning=FALSE}
-count_site$deployment_name <- fct_relevel(count_site$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
+count_site$deployment_name <- fct_relevel(count_site$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Cuarta", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
 
 countbysite <- ggplot(count_site, aes(deployment_name, n_images_total)) +
   geom_bar(stat = "identity") + # so i can pass a value to the bar instead of having ggplot count for me
@@ -332,7 +332,7 @@ countbysite
 ### Percent of images that contained animals at each location (this corrects for different numbers of images taken at different locations, better for comparing sites to each other)
 ```{r percent animals by site, echo=FALSE, message=FALSE, warning=FALSE}
 
-camera_activity_summary$deployment_name <- fct_relevel(count_site$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
+camera_activity_summary$deployment_name <- fct_relevel(count_site$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Cuarta", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
 
 percentbysite <- ggplot(camera_activity_summary, aes(deployment_name, percent_animals)) +
   geom_bar(stat = "identity") + # so i can pass a value to the bar instead of having ggplot count for me
@@ -382,7 +382,7 @@ species_site_plot <- count_species_site %>% # make a new version of this table w
   filter(!str_detect(species, "dead"))
 
 # set order of sites N to S
-species_site_plot$deployment_name <- deployment_name <- fct_relevel(species_site_plot$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
+species_site_plot$deployment_name <- deployment_name <- fct_relevel(species_site_plot$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Cuarta", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
 
 stacked_spp_site <- ggplot(species_site_plot, aes(deployment_name, n_images)) +
   geom_bar(aes(fill = species), # lets me make clustered bar chart
@@ -407,7 +407,7 @@ stacked_spp_site
 # don't really need ot change much, just swap stacked barchat to position = fill to make it percents instead of counts, use coord_polar() to make it a donut, and facet wrap by deployment_name
 
 # set order of sites N to S
-species_site_plot$deployment_name <- fct_relevel(species_site_plot$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
+species_site_plot$deployment_name <- fct_relevel(species_site_plot$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Cuarta", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
 
 # plot
 species_site_freq <- ggplot(species_site_plot, aes(x = 4, y = n_images, fill = species)) +
@@ -432,7 +432,7 @@ human_site <- count_species_site %>% # make a new version of this table with hum
                              .default = as.character(species)))
 
 # set order of sites N to S
-human_site$deployment_name <- deployment_name <- fct_relevel(human_site$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
+human_site$deployment_name <- deployment_name <- fct_relevel(human_site$deployment_name, c("Gato", "Kayak (St. Augustine West)", "Llegua" , "Auggie's", "Rennie's", "Bulito", "Panochas", "Little Drake's", "Sacate", "Cuarta", "Alegria", "Caliente")) # relevel sites so they're in a N > S order
 
 human_site_plot <- ggplot(human_site, aes(deployment_name, n_images)) +
   geom_bar(aes(fill = species), # lets me make clustered bar chart
@@ -463,7 +463,7 @@ wildlife_month <- species_month %>%
   filter(!str_detect(species, "dead")) %>% 
   unite("month_year", month, year, sep = " ")
 
-wildlife_month$month_year <- fct_relevel(wildlife_month$month_year, c( "Jun 2023","Jul 2023", "Aug 2023", "Sep 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024"   ))
+wildlife_month$month_year <- fct_relevel(wildlife_month$month_year, c( "Jun 2023","Jul 2023", "Aug 2023", "Sep 2023", "Oct 2023", "Nov 2023", "Dec 2023", "Jan 2024", "Feb 2024", "Mar 2024", "Apr 2024", "May 2024", "Jun 2024"   ))
 
  monthly_spp <- ggplot(wildlife_month, aes(month_year, n_imgs)) +
   geom_bar(aes(fill = species), # lets me make clustered bar chart
